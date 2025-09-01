@@ -1,0 +1,38 @@
+# Archivos de compilación de .NET
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+*.cache
+*.config
+
+# Archivos de usuario
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Archivos de IDE
+.vs/
+.idea/
+*.swp
+*.swo
+
+# Archivos de NuGet
+packages/
+*.nupkg
+nuget.exe
+
+# Logs y archivos temporales
+logs/
+*.log
+*.tmp
+*.temp
+
+# Archivos de desarrollo local
+appsettings.Development.json
+appsettings.Local.json
+
+# Archivos de publicación
+publish/
