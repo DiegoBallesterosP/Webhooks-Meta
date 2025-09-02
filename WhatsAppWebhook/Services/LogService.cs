@@ -1,47 +1,55 @@
-using System.Text.Json;
+namespace WhatsAppWebhook.Services;
 
-namespace WhatsAppWebhook.Services
+public static class LogService
 {
-    public static class LogService
+    public static void LogVerification(string hubChallenge)
     {
-        public static void SetLogText(string content, string logType)
+        var logMessage = $"VERIFICACIÓN |Challenge: {hubChallenge}";
+        SaveLog("webhook-verify", logMessage);
+    }
+
+    public static void LogWebhook(string rawBody)
+    {
+        SaveLog("webhook-received", rawBody);
+    }
+
+    private static void SaveLog(string logType, string content)
+    {
+        try
         {
-            try
-            {
-                var timestamp = DateTime.Now;
-                var logMessage = $"[{timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{logType}] {content}";
-                var logsDirectory = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if (!Directory.Exists(logDir))
+                Directory.CreateDirectory(logDir);
 
-                if (!Directory.Exists(logsDirectory))
-                    Directory.CreateDirectory(logsDirectory);
+            var logFile = Path.Combine(logDir, $"{logType}-{DateTime.Now:yyyyMMdd}.txt");
+            var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {content}";
 
-                var logFileName = $"{logType}-{timestamp:yyyyMMdd}.txt";
-                var logFilePath = Path.Combine(logsDirectory, logFileName);
-
-                File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
-
-                Console.WriteLine($"Log guardado en: {logFilePath}");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al escribir log: {ex.Message}");
-            }
+            File.AppendAllText(logFile, logMessage + Environment.NewLine);
+            Console.WriteLine(logMessage);
         }
-
-        public static void LogWebhookRequest(object request, string logType = "webhookmeta")
+        catch (Exception ex)
         {
-            try
-            {
-                var jsonContent = JsonSerializer.Serialize(request, new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                });
-                SetLogText(jsonContent, logType);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al serializar log: {ex.Message}");
-            }
+            SaveErrorLog($"Error en {logType}: {ex.Message}");
+        }
+    }
+
+    private static void SaveErrorLog(string errorMessage)
+    {
+        try
+        {
+            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+            if (!Directory.Exists(logDir))
+                Directory.CreateDirectory(logDir);
+
+            var errorFile = Path.Combine(logDir, $"errors-{DateTime.Now:yyyyMMdd}.txt");
+            var errorLog = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | ERROR | {errorMessage}";
+
+            File.AppendAllText(errorFile, errorLog + Environment.NewLine);
+            Console.WriteLine(errorLog);
+        }
+        catch
+        {
+            Console.WriteLine($"Error crítico: No se pudo guardar el log de error: {errorMessage}");
         }
     }
 }
