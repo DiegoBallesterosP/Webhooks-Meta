@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using WhatsAppWebhook.Services;
 
 namespace WhatsAppWebhook.Endpoints;
@@ -6,12 +7,23 @@ public static class WebhookEndpoints
 {
     public static void MapWebhookEndpoints(this WebApplication app)
     {
-        app.MapGet("/subscribe", (HttpRequest request, IConfiguration config) =>
+        app.MapGet("/subscribe", (
+            [FromQuery(Name = "hub.mode")] string hubMode,
+            [FromQuery(Name = "hub.challenge")] string hubChallenge,
+            [FromQuery(Name = "hub.verify_token")] string verifyToken,
+            IConfiguration config,
+            ILogger<Program> logger) =>
         {
-            var hubChallenge = request.Query["hub.challenge"].ToString();
-            LogService.LogVerification(hubChallenge);
-            return Results.Ok(hubChallenge);
+            var expectedToken = config["Webhook:VerificationToken"];
+
+            logger.LogInformation("Verifying webhook: mode={hubMode}, challenge={hubChallenge}, token={verifyToken}", hubMode, hubChallenge, verifyToken);
+
+            if (hubMode == "subscribe" && verifyToken == expectedToken)
+                return Results.Text(hubChallenge, "text/plain");
+
+            return Results.Unauthorized();
         })
+        .AllowAnonymous()
         .WithName("VerifyWebhook");
 
         app.MapPost("/subscribe", async (HttpRequest request) =>

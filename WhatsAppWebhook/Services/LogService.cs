@@ -2,9 +2,9 @@ namespace WhatsAppWebhook.Services;
 
 public static class LogService
 {
-    public static void LogVerification(string hubChallenge)
+    public static void LogVerification(string hubMode, string hubChallenge, string verifyToken)
     {
-        var logMessage = $"VERIFICACIÓN |Challenge: {hubChallenge}";
+        var logMessage = $"VERIFICACIÓN |Challenge: {hubChallenge} | hubMode: {hubMode} | verifyToken: {verifyToken}";
         SaveLog("webhook-verify", logMessage);
     }
 
