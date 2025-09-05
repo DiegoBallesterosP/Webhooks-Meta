@@ -1,4 +1,5 @@
 using WhatsAppWebhook.Models;
+using System.Text;
 
 namespace WhatsAppWebhook.Services
 {
@@ -52,15 +53,26 @@ namespace WhatsAppWebhook.Services
                 return;
             }
 
-            var transcription = await _audioService.TranscribeAsync(audioBytes);
-            var result = transcription ?? $"[NO_TRANSCRIBED] media_id={msg.Content}";
+            string transcription;
+            try
+            {
+                transcription = await _audioService.TranscribeStreamAsync(audioBytes);
+            }
+            catch (Exception ex)
+            {
+                LogService.SaveLog("webhook-error", $"Error transcribiendo audio {msg.Content}: {ex.Message}");
+                transcription = null;
+            }
+
+            var result = !string.IsNullOrWhiteSpace(transcription)
+                ? transcription
+                : $"[NO_TRANSCRIBED] media_id={msg.Content}";
 
             LogService.SaveLog("webhook-message",
                 $"{msg.TimestampUtc:O} | AUDIO | {msg.SenderName} ({msg.Sender}) | {result}");
 
             LogService.SaveLog("webhook-raw", msg.RawPayload);
         }
-
 
         private async Task SendUnsupportedTypeResponse(string sender)
         {

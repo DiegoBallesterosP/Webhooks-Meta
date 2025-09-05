@@ -1,7 +1,6 @@
 using System.Net.Http.Headers;
-using Amazon.TranscribeStreaming;
-using Amazon.TranscribeStreaming.Model;
 using System.Text;
+using System.Text.Json;
 
 namespace WhatsAppWebhook.Services
 {
@@ -9,13 +8,11 @@ namespace WhatsAppWebhook.Services
     {
         private readonly IConfiguration _config;
         private readonly HttpClient _http;
-        private readonly IAmazonTranscribeStreaming _transcribeClient;
 
-        public AudioService(IConfiguration config, HttpClient http, IAmazonTranscribeStreaming transcribeClient)
+        public AudioService(IConfiguration config, HttpClient http)
         {
             _config = config;
             _http = http;
-            _transcribeClient = transcribeClient;
         }
 
         public async Task<byte[]?> GetAudioBytesAsync(string mediaId)
@@ -45,95 +42,65 @@ namespace WhatsAppWebhook.Services
             }
         }
 
-        public async Task<string?> TranscribeAsync(byte[] audioBytes)
+        public async Task<string> TranscribeStreamAsync(byte[] audioBytes)
         {
-            var configs = new[]
-            {
-                new { Encoding = MediaEncoding.OggOpus, SampleRate = 16000 },
-                new { Encoding = MediaEncoding.OggOpus, SampleRate = 8000 },
-                new { Encoding = MediaEncoding.Pcm, SampleRate = 16000 },
-                new { Encoding = MediaEncoding.Pcm, SampleRate = 8000 }
-            };
+            var region = _config["AWS:Region"];
+            var language = "es-ES";
+            var sampleRate = 16000;
 
-            foreach (var config in configs)
+            var url = $"https://transcribestreaming.{region}.amazonaws.com:8443/stream-transcription?language-code={language}&media-encoding=pcm&sample-rate={sampleRate}";
+
+            var client = new HttpClient { DefaultRequestVersion = new Version(2, 0) };
+
+            using var request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            request.Headers.Add("x-amz-target", "com.amazonaws.transcribe.Transcribe.StartStreamTranscription");
+            request.Headers.Add("x-amz-content-sha256", "STREAMING-AWS4-HMAC-SHA256-EVENTS");
+            request.Headers.Add("x-amz-date", DateTime.UtcNow.ToString("yyyyMMddTHHmmssZ"));
+            request.Headers.Add("x-amz-transcribe-language-code", language);
+            request.Headers.Add("x-amz-transcribe-sample-rate", sampleRate.ToString());
+            request.Headers.Authorization = new AuthenticationHeaderValue("AWS4-HMAC-SHA256", "Credential=..., SignedHeaders=..., Signature=...");
+
+            request.Content = new StreamContent(new MemoryStream(audioBytes));
+
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            var transcriptBuilder = new StringBuilder();
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+            using var reader = new StreamReader(responseStream);
+
+            while (!reader.EndOfStream)
             {
-                try
+                var line = await reader.ReadLineAsync();
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                if (line.Contains("TranscriptEvent"))
                 {
-                    using var stream = new MemoryStream(audioBytes);
-                    var transcript = await TryTranscribeWithConfig(stream, config.Encoding, config.SampleRate);
-
-                    if (!string.IsNullOrWhiteSpace(transcript))
+                    try
                     {
-                        LogService.SaveLog("webhook-info", $"Transcripción exitosa con {config.Encoding} a {config.SampleRate}Hz");
-                        return transcript;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    LogService.SaveLog("webhook-debug", $"Falló transcripción con {config.Encoding}@{config.SampleRate}Hz: {ex.Message}");
-                }
-            }
+                        using var doc = JsonDocument.Parse(line);
+                        var results = doc.RootElement.GetProperty("Transcript").GetProperty("Results");
 
-            LogService.SaveLog("webhook-warning", "No se pudo transcribir con ninguna configuración");
-            return null;
-        }
-
-        private async Task<string?> TryTranscribeWithConfig(Stream audioStream, MediaEncoding encoding, int sampleRate)
-        {
-            var request = new StartStreamTranscriptionRequest
-            {
-                LanguageCode = LanguageCode.EsES,
-                MediaEncoding = encoding,
-                MediaSampleRateHertz = sampleRate,
-                AudioStream = new AudioEventStream(audioStream)
-            };
-
-            var sb = new StringBuilder();
-
-            using var response = await _transcribeClient.StartStreamTranscriptionAsync(request, CancellationToken.None);
-
-            await foreach (var evt in response.TranscriptResultStream)
-            {
-                if (evt is TranscriptEvent transcriptEvent)
-                {
-                    foreach (var result in transcriptEvent.Transcript.Results)
-                    {
-                        if (result.IsPartial == true || result.Alternatives == null)
-                            continue;
-
-                        foreach (var alt in result.Alternatives)
+                        foreach (var result in results.EnumerateArray())
                         {
-                            if (!string.IsNullOrWhiteSpace(alt.Transcript))
-                                sb.AppendLine(alt.Transcript);
+                            if (!result.GetProperty("IsPartial").GetBoolean())
+                            {
+                                var alternatives = result.GetProperty("Alternatives");
+                                foreach (var alt in alternatives.EnumerateArray())
+                                {
+                                    var text = alt.GetProperty("Transcript").GetString();
+                                    if (!string.IsNullOrWhiteSpace(text))
+                                        transcriptBuilder.AppendLine(text);
+                                }
+                            }
                         }
                     }
+                    catch { }
                 }
             }
 
-            return sb.Length > 0 ? sb.ToString().Trim() : null;
-        }
-
-        private class AudioEventStream : IAsyncEnumerable<AudioEvent>
-        {
-            private readonly Stream _source;
-
-            public AudioEventStream(Stream source) => _source = source;
-
-            public async IAsyncEnumerator<AudioEvent> GetAsyncEnumerator(CancellationToken cancellationToken = default)
-            {
-                var buffer = new byte[3200];
-                int bytesRead;
-
-                while ((bytesRead = await _source.ReadAsync(buffer, 0, buffer.Length, cancellationToken)) > 0)
-                {
-                    yield return new AudioEvent
-                    {
-                        AudioChunk = new MemoryStream(buffer, 0, bytesRead, writable: false)
-                    };
-
-                    await Task.Delay(100, cancellationToken);
-                }
-            }
+            return transcriptBuilder.ToString().Trim();
         }
     }
 }

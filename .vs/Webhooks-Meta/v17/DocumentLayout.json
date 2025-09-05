@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\diego\\Desktop\\Webhooks-Meta\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{8C3AA4F0-C125-EE66-1FEE-27ECC2358DBF}|WhatsAppWebhook\\WhatsAppWebhook.csproj|c:\\users\\diego\\desktop\\webhooks-meta\\whatsappwebhook\\services\\audioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{8C3AA4F0-C125-EE66-1FEE-27ECC2358DBF}|WhatsAppWebhook\\WhatsAppWebhook.csproj|solutionrelative:whatsappwebhook\\services\\audioservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{8C3AA4F0-C125-EE66-1FEE-27ECC2358DBF}|WhatsAppWebhook\\WhatsAppWebhook.csproj|c:\\users\\diego\\desktop\\webhooks-meta\\whatsappwebhook\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{8C3AA4F0-C125-EE66-1FEE-27ECC2358DBF}|WhatsAppWebhook\\WhatsAppWebhook.csproj|solutionrelative:whatsappwebhook\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -34,6 +38,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "AudioService.cs",
+              "DocumentMoniker": "C:\\Users\\diego\\Desktop\\Webhooks-Meta\\WhatsAppWebhook\\Services\\AudioService.cs",
+              "RelativeDocumentMoniker": "WhatsAppWebhook\\Services\\AudioService.cs",
+              "ToolTip": "C:\\Users\\diego\\Desktop\\Webhooks-Meta\\WhatsAppWebhook\\Services\\AudioService.cs",
+              "RelativeToolTip": "WhatsAppWebhook\\Services\\AudioService.cs",
+              "ViewState": "AgIAADYAAAAAAAAAAAAwwEYAAABAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-09-05T21:39:00.951Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\diego\\Desktop\\Webhooks-Meta\\WhatsAppWebhook\\Program.cs",
               "RelativeDocumentMoniker": "WhatsAppWebhook\\Program.cs",
@@ -46,7 +63,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "Microsoft.Common.CurrentVersion.targets",
               "DocumentMoniker": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
               "RelativeDocumentMoniker": "..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
@@ -54,12 +71,11 @@
               "RelativeToolTip": "..\\..\\..\\..\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
               "ViewState": "AgIAAOEUAAAAAAAAAABBwPMUAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
-              "WhenOpened": "2025-09-03T17:37:40.118Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-03T17:37:40.118Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "MessageService.cs",
               "DocumentMoniker": "C:\\Users\\diego\\Desktop\\Webhooks-Meta\\WhatsAppWebhook\\Services\\MessageService.cs",
               "RelativeDocumentMoniker": "WhatsAppWebhook\\Services\\MessageService.cs",
@@ -67,12 +83,11 @@
               "RelativeToolTip": "WhatsAppWebhook\\Services\\MessageService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAJAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-03T17:37:00.653Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-03T17:37:00.653Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 4,
               "Title": "WebhookParser.cs",
               "DocumentMoniker": "C:\\Users\\diego\\Desktop\\Webhooks-Meta\\WhatsAppWebhook\\Services\\WebhookParser.cs",
               "RelativeDocumentMoniker": "WhatsAppWebhook\\Services\\WebhookParser.cs",
@@ -80,8 +95,7 @@
               "RelativeToolTip": "WhatsAppWebhook\\Services\\WebhookParser.cs",
               "ViewState": "AgIAABAAAAAAAAAAAAAgwAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-09-03T17:36:52.532Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-09-03T17:36:52.532Z"
             }
           ]
         }
