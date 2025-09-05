@@ -1,55 +1,43 @@
-namespace WhatsAppWebhook.Services;
-
-public static class LogService
+namespace WhatsAppWebhook.Services
 {
-    public static void LogVerification(string hubMode, string hubChallenge, string verifyToken)
+    public class LogService
     {
-        var logMessage = $"VERIFICACIÓN |Challenge: {hubChallenge} | hubMode: {hubMode} | verifyToken: {verifyToken}";
-        SaveLog("webhook-verify", logMessage);
-    }
+        private static readonly string LogDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+        private static readonly string LogFile = Path.Combine(LogDir, "application.log");
+        private static readonly string ErrorFile = Path.Combine(LogDir, "errors.log");
 
-    public static void LogWebhook(string rawBody)
-    {
-        SaveLog("webhook-received", rawBody);
-    }
-
-    private static void SaveLog(string logType, string content)
-    {
-        try
+        public static void SaveLog(string logType, string content)
         {
-            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-            if (!Directory.Exists(logDir))
-                Directory.CreateDirectory(logDir);
+            try
+            {
+                if (!Directory.Exists(LogDir))
+                    Directory.CreateDirectory(LogDir);
 
-            var logFile = Path.Combine(logDir, $"{logType}-{DateTime.Now:yyyyMMdd}.txt");
-            var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {content}";
-
-            File.AppendAllText(logFile, logMessage + Environment.NewLine);
-            Console.WriteLine(logMessage);
+                var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {logType.ToUpper()} | {content}";
+                File.AppendAllText(LogFile, logMessage + Environment.NewLine);
+                Console.WriteLine(logMessage);
+            }
+            catch (Exception ex)
+            {
+                SaveErrorLog($"Error en {logType}: {ex.Message}");
+            }
         }
-        catch (Exception ex)
-        {
-            SaveErrorLog($"Error en {logType}: {ex.Message}");
-        }
-    }
 
-    private static void SaveErrorLog(string errorMessage)
-    {
-        try
+        private static void SaveErrorLog(string errorMessage)
         {
-            var logDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-            if (!Directory.Exists(logDir))
-                Directory.CreateDirectory(logDir);
+            try
+            {
+                if (!Directory.Exists(LogDir))
+                    Directory.CreateDirectory(LogDir);
 
-            var errorFile = Path.Combine(logDir, $"errors-{DateTime.Now:yyyyMMdd}.txt");
-            var errorLog = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | ERROR | {errorMessage}";
-
-            File.AppendAllText(errorFile, errorLog + Environment.NewLine);
-            Console.WriteLine(errorLog);
-        }
-        catch
-        {
-            Console.WriteLine($"Error crítico: No se pudo guardar el log de error: {errorMessage}");
+                var errorLog = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | ERROR | {errorMessage}";
+                File.AppendAllText(ErrorFile, errorLog + Environment.NewLine);
+                Console.WriteLine(errorLog);
+            }
+            catch
+            {
+                Console.WriteLine($"Error crítico: No se pudo guardar el log de error: {errorMessage}");
+            }
         }
     }
 }
