@@ -46,20 +46,17 @@ namespace WhatsAppWebhook.Services
                             ? extractor(msg)
                             : string.Empty;
 
-                        if (type == "text" || type == "audio")
+                        yield return new MessageLog
                         {
-                            yield return new MessageLog
-                            {
-                                PhoneNumberId = phoneNumberId,
-                                MessageId = msgId,
-                                Sender = from,
-                                SenderName = senderName,
-                                Type = type,
-                                Content = content,
-                                TimestampUtc = timestamp,
-                                RawPayload = rawBody
-                            };
-                        }
+                            PhoneNumberId = phoneNumberId,
+                            MessageId = msgId,
+                            Sender = from,
+                            SenderName = senderName,
+                            Type = type,
+                            Content = content,
+                            TimestampUtc = timestamp,
+                            RawPayload = rawBody
+                        };
                     }
                 }
             }

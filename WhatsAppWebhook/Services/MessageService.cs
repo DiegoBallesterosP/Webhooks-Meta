@@ -1,5 +1,4 @@
 using WhatsAppWebhook.Models;
-using System.Text;
 
 namespace WhatsAppWebhook.Services
 {
@@ -20,12 +19,6 @@ namespace WhatsAppWebhook.Services
 
             foreach (var msg in messages)
             {
-                if (string.IsNullOrEmpty(msg.Type))
-                {
-                    LogService.SaveLog("webhook-error", $"Tipo no especificado: {msg.RawPayload}");
-                    continue;
-                }
-
                 switch (msg.Type)
                 {
                     case "text":
@@ -46,7 +39,8 @@ namespace WhatsAppWebhook.Services
 
         private async Task ProcessAudioMessage(MessageLog msg)
         {
-            var audioBytes = await _audioService.GetAudioBytesAsync(msg.Content);
+            byte[]? audioBytes = await _audioService.GetAudioBytesAsync(msg.Content);
+
             if (audioBytes == null)
             {
                 LogService.SaveLog("webhook-error", $"No se pudo descargar audio: {msg.Content}");
@@ -74,13 +68,14 @@ namespace WhatsAppWebhook.Services
             LogService.SaveLog("webhook-raw", msg.RawPayload);
         }
 
+
         private async Task SendUnsupportedTypeResponse(string sender)
         {
             try
             {
-                var response = "Este canal solo acepta mensajes de texto o audio.";
-                var result = await _sender.SendTextAsync(sender, response);
-                LogService.SaveLog("auto-response", $"Sent to {sender}: {response} | Response: {result}");
+                var responseMessage = "Este canal solo acepta mensajes de texto o audio.";
+                await _sender.SendTextAsync(sender, responseMessage);
+                LogService.SaveLog("auto-response", $"Sent to {sender}: {responseMessage}");
             }
             catch (Exception ex)
             {
