@@ -14,7 +14,7 @@ namespace WhatsAppWebhook.Services
         }
 
         private string BaseUrl => _config["WhatsApp:ApiBaseUrl"];
-        private string SenderId => _config["WhatsApp:SenderId"];
+        public string SenderId => _config["WhatsApp:SenderId"];
         private string AccessToken => _config["WhatsApp:AccessToken"];
 
         private void SetAuthHeader()
@@ -25,21 +25,14 @@ namespace WhatsAppWebhook.Services
         public async Task<string> SendTextAsync(string to, string message)
         {
             SetAuthHeader();
-
-            // URL correcta: Phone Number ID + /messages
             var url = $"{BaseUrl}{SenderId}/messages";
-
             var payload = new
             {
                 messaging_product = "whatsapp",
                 recipient_type = "individual",
                 to = to,
                 type = "text",
-                text = new
-                {
-                    preview_url = false,
-                    body = message
-                }
+                text = new { preview_url = false, body = message }
             };
 
             var response = await _http.PostAsJsonAsync(url, payload);

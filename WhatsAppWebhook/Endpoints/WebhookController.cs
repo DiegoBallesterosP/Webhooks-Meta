@@ -21,7 +21,7 @@ namespace WhatsAppWebhook.Endpoints
         [HttpGet("subscribe")]
         [AllowAnonymous]
         public IActionResult VerifyWebhook(
-            [FromQuery(Name = "hub.mode")] string hubMode,
+            [FromQuery(Name = "hub.mode")] string hubMode,  
             [FromQuery(Name = "hub.challenge")] string hubChallenge,
             [FromQuery(Name = "hub.verify_token")] string verifyToken)
         {

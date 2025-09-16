@@ -9,10 +9,13 @@ namespace WhatsAppWebhook.Endpoints
     public class WhatsAppMessageController : ControllerBase
     {
         private readonly WhatsAppSenderService _sender;
+                private readonly CosmosDbService _cosmosDbService;
 
-        public WhatsAppMessageController(WhatsAppSenderService sender)
+
+        public WhatsAppMessageController(WhatsAppSenderService sender,  CosmosDbService cosmosDbService)
         {
             _sender = sender;
+            _cosmosDbService = cosmosDbService;
         }
 
         [HttpPost("message")]
