@@ -1,4 +1,4 @@
-namespace WhatsAppWebhook.Models
+namespace WhatsAppWebhook.Models.ConnectionCloud
 {
     public class MessageLog
     {

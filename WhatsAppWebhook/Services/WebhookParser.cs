@@ -1,5 +1,5 @@
 using System.Text.Json;
-using WhatsAppWebhook.Models;
+using WhatsAppWebhook.Models.ConnectionCloud;
 
 namespace WhatsAppWebhook.Services
 {

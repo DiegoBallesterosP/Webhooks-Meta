@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using WhatsAppWebhook.Models;
-using WhatsAppWebhook.Services;
+using WhatsAppWebhook.Models.SendMessage;
+using WhatsAppWebhook.Services.HistoryLogs;
+using WhatsAppWebhook.Services.SendMessage;
 
 namespace WhatsAppWebhook.Endpoints
 {

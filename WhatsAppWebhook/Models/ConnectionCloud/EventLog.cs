@@ -2,7 +2,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace WhatsAppWebhook.Models
+namespace WhatsAppWebhook.Models.ConnectionCloud
 {
     public class EventLog
     {

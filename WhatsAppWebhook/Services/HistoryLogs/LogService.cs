@@ -1,4 +1,4 @@
-namespace WhatsAppWebhook.Services
+namespace WhatsAppWebhook.Services.HistoryLogs
 {
     public class LogService
     {
@@ -23,7 +23,7 @@ namespace WhatsAppWebhook.Services
             }
         }
 
-        private static void SaveErrorLog(string errorMessage)
+        public static void SaveErrorLog(string errorMessage)
         {
             try
             {

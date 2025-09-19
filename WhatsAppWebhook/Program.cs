@@ -1,8 +1,12 @@
-using WhatsAppWebhook.Services;
-using Amazon.TranscribeStreaming;
 using Amazon;
 using Amazon.Runtime;
-using WhatsAppWebhook.Models;
+using Amazon.TranscribeStreaming;
+using WhatsAppWebhook.Models.ConnectionCloud;
+using WhatsAppWebhook.Services;
+using WhatsAppWebhook.Services.ConnectionCloud;
+using WhatsAppWebhook.Services.ConnectionModel;
+using WhatsAppWebhook.Services.HistoryLogs;
+using WhatsAppWebhook.Services.SendMessage;
 
 EventLog.RegisterClassMap();
 
@@ -35,6 +39,8 @@ builder.Services.AddScoped<LogService>();
 builder.Services.AddHttpClient<AudioService>();
 builder.Services.AddHttpClient<WhatsAppSenderService>();
 builder.Services.AddScoped<MessageService>();
+builder.Services.AddHttpClient<CloudApiService>();
+builder.Services.AddHttpClient<ConnectionApiModel>();
 
 var app = builder.Build();
 

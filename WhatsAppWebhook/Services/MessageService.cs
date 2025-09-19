@@ -1,4 +1,9 @@
-using WhatsAppWebhook.Models;
+using WhatsAppWebhook.Services.HistoryLogs;
+using WhatsAppWebhook.Services.SendMessage;
+using WhatsAppWebhook.Services.ConnectionCloud;
+using WhatsAppWebhook.Services.ConnectionModel;
+using WhatsAppWebhook.Models.ConnectionModelAI;
+using WhatsAppWebhook.Models.ConnectionCloud;
 
 
 namespace WhatsAppWebhook.Services
@@ -8,12 +13,24 @@ namespace WhatsAppWebhook.Services
         private readonly AudioService _audioService;
         private readonly WhatsAppSenderService _sender;
         private readonly CosmosDbService _cosmosDbService;
+        private readonly ConnectionApiModel _connectionApiModel;
 
-        public MessageService(AudioService audioService, WhatsAppSenderService sender, CosmosDbService cosmosDbService)
+        private readonly CloudApiService _cloudApiService;
+
+        public MessageService(
+            AudioService audioService,
+            WhatsAppSenderService sender,
+            CosmosDbService cosmosDbService,
+            CloudApiService cloudApiService,
+            ConnectionApiModel connectionApiModel
+            )
         {
             _audioService = audioService;
             _sender = sender;
             _cosmosDbService = cosmosDbService;
+            _cloudApiService = cloudApiService;
+            _connectionApiModel = connectionApiModel;
+            
         }
 
         public async Task ProcessWebhookAsync(string rawBody)
@@ -26,6 +43,23 @@ namespace WhatsAppWebhook.Services
                     LogService.SaveLog("webhook-skip", $"Ignored self message from {msg.Sender}");
                     continue;
                 }
+
+                if (msg.Type != "text" && msg.Type != "audio")
+                {
+                    await SendUnsupportedTypeResponse(msg);
+                    continue;
+                }
+
+
+                // VALIDAR SI EL NUMERO ESTA CONFIGURADO EN LA API JAVA
+                // SI NO ESTA CONFIGURADO, RETORNAR QUE LO CONFIGURE PRIMERO
+                // SI ESTA CONFIGURADO, CONTINUAR
+                // DEVOLVER UN CONTINUE PARA QUE NO SIGA EL PROCESO
+
+
+                // OBTNER LOS DATOS PARA ENVIAR AL MODELO
+                RequestChat requestChat = await BuildRequestChatAsync(msg);
+
 
                 switch (msg.Type)
                 {
@@ -48,9 +82,54 @@ namespace WhatsAppWebhook.Services
                         break;
 
                     default:
-                        await SendUnsupportedTypeResponse(msg);
                         break;
                 }
+                
+                 // AKI IRA LA API DE CHATGPT O SIMILAR QUE RECIBIRA LA INFORMACION SEA PRIMERA VEZ O NO
+                await _connectionApiModel.SendChatAsync(requestChat);
+            }
+        }
+
+        private async Task<RequestChat> BuildRequestChatAsync(MessageLog msg)
+        {
+            // 👉 Verificar si se debe enviar mensaje de bienvenida
+            var shouldGreet = await _cosmosDbService.ShouldGreetAsync(msg.Sender);
+
+            if (shouldGreet)
+            {
+                // 👉 Consultar API de Java
+                var datosTercero = await _cloudApiService.GetClientInfoAsync(msg.Sender);
+
+                return new RequestChat
+                {
+                    numberUser = datosTercero?.numeroCelularCompleto ?? msg.Sender,
+                    nameUser = datosTercero?.nombreTercero,
+                    isFirstMessage = true,
+                    messages = new List<Message>()
+                };
+            }
+            else
+            {
+                // 👉 Consultar historial (últimos 11)
+                var historial = await _cosmosDbService.GetConversationHistoryAsync(msg.Sender);
+
+                var ultimos11 = historial
+                    .OrderByDescending(h => DateTime.Parse(h.EventDate))
+                    .Take(11)
+                    .OrderBy(h => DateTime.Parse(h.EventDate))
+                    .ToList();
+
+                return new RequestChat
+                {
+                    numberUser = msg.Sender,
+                    nameUser = string.Empty,
+                    isFirstMessage = false,
+                    messages = ultimos11.Select(h => new Message
+                    {
+                        type = h.Role,
+                        message = h.Payload
+                    }).ToList()
+                };
             }
         }
 
@@ -96,19 +175,7 @@ namespace WhatsAppWebhook.Services
             {
                 var responseMessage = "Este canal solo acepta mensajes de texto o audio.";
                 var response = await _sender.SendTextAsync(msg.Sender, responseMessage);
-
                 LogService.SaveLog("auto-response", $"Sent to {msg.Sender}: {responseMessage}");
-
-                _ = Task.Run(() => _cosmosDbService.AddItemAsync(new EventLog
-                {
-                    EventType = "API-SendText",
-                    Payload = responseMessage,
-                    OriginNumber = _sender.SenderId,
-                    DestinationNumber = msg.Sender,
-                    Status = "SENT",
-                    EventDate = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    Role = "assistant"
-                }));
             }
             catch (Exception ex)
             {
