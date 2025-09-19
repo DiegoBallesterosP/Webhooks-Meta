@@ -33,6 +33,7 @@ logs/
 # Archivos de desarrollo local
 appsettings.Development.json
 appsettings.Local.json
+appsettings.json
 
 # Archivos de publicación
 publish/
