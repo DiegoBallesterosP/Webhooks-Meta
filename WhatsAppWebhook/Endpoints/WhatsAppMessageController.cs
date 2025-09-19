@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using WhatsAppWebhook.Models.SendMessage;
-using WhatsAppWebhook.Services.HistoryLogs;
 using WhatsAppWebhook.Services.SendMessage;
 
 namespace WhatsAppWebhook.Endpoints
@@ -10,13 +9,11 @@ namespace WhatsAppWebhook.Endpoints
     public class WhatsAppMessageController : ControllerBase
     {
         private readonly WhatsAppSenderService _sender;
-                private readonly CosmosDbService _cosmosDbService;
 
 
-        public WhatsAppMessageController(WhatsAppSenderService sender,  CosmosDbService cosmosDbService)
+        public WhatsAppMessageController(WhatsAppSenderService sender)
         {
             _sender = sender;
-            _cosmosDbService = cosmosDbService;
         }
 
         [HttpPost("message")]

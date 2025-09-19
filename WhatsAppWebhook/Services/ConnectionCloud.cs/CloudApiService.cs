@@ -30,5 +30,22 @@ namespace WhatsAppWebhook.Services.ConnectionCloud
                 return null;
             }
         }
+
+        public async Task<bool> ValidateExitsConfigurationByNumber(string whatsAppNumber)
+        {
+            try
+            {
+                var baseUrl = _config["CloudApi:BaseUrl"];
+                var url = $"{baseUrl}/validateExistConfigurationByNumber/{whatsAppNumber}";
+                var response = await _http.GetAsync(url);
+
+                return await response.Content.ReadFromJsonAsync<bool>();
+            }
+            catch (Exception ex)
+            {
+                LogService.SaveErrorLog($"Error deserializando respuesta: {ex.Message}");
+                return false;
+            }
+        }
     }
 }

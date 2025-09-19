@@ -1,9 +1,10 @@
-using WhatsAppWebhook.Services.HistoryLogs;
-using WhatsAppWebhook.Services.SendMessage;
+using WhatsAppWebhook.Models.ConnectionCloud;
+using WhatsAppWebhook.Models.ConnectionModelAI;
 using WhatsAppWebhook.Services.ConnectionCloud;
 using WhatsAppWebhook.Services.ConnectionModel;
-using WhatsAppWebhook.Models.ConnectionModelAI;
-using WhatsAppWebhook.Models.ConnectionCloud;
+using WhatsAppWebhook.Services.Constants;
+using WhatsAppWebhook.Services.HistoryLogs;
+using WhatsAppWebhook.Services.SendMessage;
 
 
 namespace WhatsAppWebhook.Services
@@ -16,13 +17,15 @@ namespace WhatsAppWebhook.Services
         private readonly ConnectionApiModel _connectionApiModel;
 
         private readonly CloudApiService _cloudApiService;
+        private readonly ValidateConfiguration _validateConfiguration;
 
         public MessageService(
             AudioService audioService,
             WhatsAppSenderService sender,
             CosmosDbService cosmosDbService,
             CloudApiService cloudApiService,
-            ConnectionApiModel connectionApiModel
+            ConnectionApiModel connectionApiModel,
+            ValidateConfiguration validateConfiguration
             )
         {
             _audioService = audioService;
@@ -30,7 +33,7 @@ namespace WhatsAppWebhook.Services
             _cosmosDbService = cosmosDbService;
             _cloudApiService = cloudApiService;
             _connectionApiModel = connectionApiModel;
-            
+            _validateConfiguration = validateConfiguration;
         }
 
         public async Task ProcessWebhookAsync(string rawBody)
@@ -51,10 +54,12 @@ namespace WhatsAppWebhook.Services
                 }
 
 
-                // VALIDAR SI EL NUMERO ESTA CONFIGURADO EN LA API JAVA
-                // SI NO ESTA CONFIGURADO, RETORNAR QUE LO CONFIGURE PRIMERO
-                // SI ESTA CONFIGURADO, CONTINUAR
-                // DEVOLVER UN CONTINUE PARA QUE NO SIGA EL PROCESO
+                var resultValidation = await _validateConfiguration.ExistValidConfiguration(msg.Sender);
+                if (!resultValidation)
+                {
+                    await _sender.SendTextAsync(msg.Sender, MessageSystem.DefaltMessageNotConfiguration);
+                    continue;
+                }
 
 
                 // OBTNER LOS DATOS PARA ENVIAR AL MODELO

@@ -1,7 +1,9 @@
 using Amazon;
 using Amazon.Runtime;
 using Amazon.TranscribeStreaming;
+using Microsoft.Extensions.Caching.Memory;
 using WhatsAppWebhook.Models.ConnectionCloud;
+using WhatsAppWebhook.Repositories;
 using WhatsAppWebhook.Services;
 using WhatsAppWebhook.Services.ConnectionCloud;
 using WhatsAppWebhook.Services.ConnectionModel;
@@ -12,9 +14,21 @@ EventLog.RegisterClassMap();
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<ValidateConfiguration>();
+
+builder.Services.AddSingleton<InMemoryConfigurationWhatsAppNumberRepository>();
+builder.Services.AddSingleton<IConfigurationWhatsAppNumberRepository>(sp =>
+{
+    var inner = sp.GetRequiredService<InMemoryConfigurationWhatsAppNumberRepository>();
+    var cache = sp.GetRequiredService<IMemoryCache>();
+    return new CachedLicenciaRepository(inner, cache);
+});
+
 
 builder.Services.AddSingleton<IAmazonTranscribeStreaming>(provider =>
 {
