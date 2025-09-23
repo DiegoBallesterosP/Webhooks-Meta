@@ -53,7 +53,6 @@ namespace WhatsAppWebhook.Services
                     continue;
                 }
 
-
                 var resultValidation = await _validateConfiguration.ExistValidConfiguration(msg.Sender);
                 if (!resultValidation)
                 {
