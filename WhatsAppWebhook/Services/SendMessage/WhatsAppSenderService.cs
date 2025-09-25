@@ -42,11 +42,12 @@ namespace WhatsAppWebhook.Services.SendMessage
             var response = await _http.PostAsJsonAsync(url, payload);
             var content = await response.Content.ReadAsStringAsync();
 
-            if (!message.ToLower().Contains("otp"))
+            if (!message.Contains("otp", StringComparison.OrdinalIgnoreCase) &&
+                    !message.Contains("Espera la respuesta antes de enviar un nuevo mensaje.", StringComparison.OrdinalIgnoreCase))
             {
                 _ = Task.Run(() => _cosmosDbService.AddItemAsync(new EventLog
                 {
-                    EventType = "Webhook-Audio",
+                    EventType = "Answer-Text",
                     Payload = message,
                     OriginNumber = SenderId,
                     DestinationNumber = to,
@@ -55,7 +56,7 @@ namespace WhatsAppWebhook.Services.SendMessage
                     Role = "assistant"
                 }));
             }
-            
+
             LogService.SaveLog("whatsapp-send-debug", $"To: {to} | Message: {message} | Status: {response.StatusCode} | Response: {content}");
 
             if (!response.IsSuccessStatusCode)
