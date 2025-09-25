@@ -41,6 +41,8 @@ namespace WhatsAppWebhook.Services
             var messages = WebhookParser.Parse(rawBody);
             foreach (var msg in messages)
             {
+                LogService.SaveLog("webhook-message", $"{msg.TimestampUtc:O} | TEXT | {msg.SenderName} ({msg.Sender}) | {msg.Content}");
+
                 if (msg.Sender == _sender.SenderId)
                 {
                     LogService.SaveLog("webhook-skip", $"Ignored self message from {msg.Sender}");
@@ -123,16 +125,24 @@ namespace WhatsAppWebhook.Services
                     .OrderBy(h => DateTime.Parse(h.EventDate))
                     .ToList();
 
+                var messages = ultimos11.Select(h => new Message
+                {
+                    type = h.Role,
+                    message = h.Payload
+                }).ToList();
+
+                messages.Add(new Message
+                {
+                    type = "user",
+                    message = msg.Content
+                });
+
                 return new RequestChat
                 {
                     numberUser = msg.Sender,
                     nameUser = string.Empty,
                     isFirstMessage = false,
-                    messages = ultimos11.Select(h => new Message
-                    {
-                        type = h.Role,
-                        message = h.Payload
-                    }).ToList()
+                    messages = messages
                 };
             }
         }
