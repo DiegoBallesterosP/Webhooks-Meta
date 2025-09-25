@@ -1,3 +1,4 @@
+using System.Globalization;
 using WhatsAppWebhook.Models.ConnectionCloud;
 using WhatsAppWebhook.Models.ConnectionModelAI;
 using WhatsAppWebhook.Services.ConnectionCloud;
@@ -18,6 +19,7 @@ namespace WhatsAppWebhook.Services
 
         private readonly CloudApiService _cloudApiService;
         private readonly ValidateConfiguration _validateConfiguration;
+        private readonly int _intercaladoMinutes;
 
         public MessageService(
             AudioService audioService,
@@ -25,7 +27,8 @@ namespace WhatsAppWebhook.Services
             CosmosDbService cosmosDbService,
             CloudApiService cloudApiService,
             ConnectionApiModel connectionApiModel,
-            ValidateConfiguration validateConfiguration
+            ValidateConfiguration validateConfiguration,
+            IConfiguration configuration
             )
         {
             _audioService = audioService;
@@ -34,6 +37,8 @@ namespace WhatsAppWebhook.Services
             _cloudApiService = cloudApiService;
             _connectionApiModel = connectionApiModel;
             _validateConfiguration = validateConfiguration;
+            _intercaladoMinutes = configuration.GetValue<int>("MessageFlow:IntercaladoMinutes");
+
         }
 
         public async Task ProcessWebhookAsync(string rawBody)
@@ -66,6 +71,10 @@ namespace WhatsAppWebhook.Services
                 // OBTNER LOS DATOS PARA ENVIAR AL MODELO
                 RequestChat requestChat = await BuildRequestChatAsync(msg);
 
+                if (requestChat == null)
+                    continue;
+
+
 
                 switch (msg.Type)
                 {
@@ -90,8 +99,8 @@ namespace WhatsAppWebhook.Services
                     default:
                         break;
                 }
-                
-                 // AKI IRA LA API DE CHATGPT O SIMILAR QUE RECIBIRA LA INFORMACION SEA PRIMERA VEZ O NO
+
+                // AKI IRA LA API DE CHATGPT O SIMILAR QUE RECIBIRA LA INFORMACION SEA PRIMERA VEZ O NO
                 await _connectionApiModel.SendChatAsync(requestChat);
             }
         }
@@ -136,6 +145,24 @@ namespace WhatsAppWebhook.Services
                     type = "user",
                     message = msg.Content
                 });
+
+                //  Verificar intercalado de mensajes
+                if (messages.Count >= 2 && messages.Skip(messages.Count - 2).All(m => m.type == "user"))
+                {
+                    var lastUserEvent = ultimos11.LastOrDefault(h => h.Role == "user" && !string.IsNullOrWhiteSpace(h.CreatedAt));
+                    if (lastUserEvent != null)
+                    {
+                        if (DateTime.TryParseExact(lastUserEvent.CreatedAt, "yyyy-MM-ddTHH:mm:ssZ",
+                            CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal, out var lastUserTime))
+                        {
+                            if (DateTime.UtcNow - lastUserTime <= TimeSpan.FromMinutes(_intercaladoMinutes))
+                            {
+                                await _sender.SendTextAsync(msg.Sender, "Espera la respuesta antes de enviar un nuevo mensaje.");
+                                return null;
+                            }
+                        }
+                    }
+                }
 
                 return new RequestChat
                 {
