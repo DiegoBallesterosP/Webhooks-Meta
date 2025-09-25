@@ -22,5 +22,12 @@ namespace WhatsAppWebhook.Endpoints
             var result = await _sender.SendTextAsync(request.To, request.Message);
             return Ok(new { Success = true, Response = result });
         }
+
+        [HttpPost("sendOtp")]
+        public async Task<IActionResult> SendCodeOtp([FromBody] SendTextRequest request)
+        {
+            var result = await _sender.SendTemplateAsync(request.To, request.Message);
+            return Ok(new { Success = true, Response = result });
+        }
     }
 }

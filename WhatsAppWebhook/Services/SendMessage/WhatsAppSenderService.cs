@@ -42,8 +42,7 @@ namespace WhatsAppWebhook.Services.SendMessage
             var response = await _http.PostAsJsonAsync(url, payload);
             var content = await response.Content.ReadAsStringAsync();
 
-            if (!message.Contains("otp", StringComparison.OrdinalIgnoreCase) &&
-                    !message.Contains("Espera la respuesta antes de enviar un nuevo mensaje.", StringComparison.OrdinalIgnoreCase))
+            if (!message.Contains("Espera la respuesta antes de enviar un nuevo mensaje.", StringComparison.OrdinalIgnoreCase))
             {
                 _ = Task.Run(() => _cosmosDbService.AddItemAsync(new EventLog
                 {
@@ -64,5 +63,60 @@ namespace WhatsAppWebhook.Services.SendMessage
 
             return content;
         }
+
+        public async Task<string> SendTemplateAsync(string to, string otpCode)
+        {
+            SetAuthHeader();
+            var url = $"{BaseUrl}{SenderId}/messages";
+
+            var payload = new
+            {
+                messaging_product = "whatsapp",
+                to = to,
+                type = "template",
+                template = new
+                {
+                    name = "mensaje_prueba_cloud",
+                    language = new { code = "es_CO" },
+                    components = new object[]
+                    {
+                        new
+                        {
+                            type = "body",
+                            parameters = new object[]
+                            {
+                                new { type = "text", text = otpCode }
+                            }
+                        },
+                            new
+                            {
+                                type = "button",
+                                sub_type = "url",
+                                index = "0",
+                                parameters = new object[]
+                                {
+                                    new { type = "text", text = otpCode }
+                                }
+                            }
+                    }
+                }
+            };
+
+            var response = await _http.PostAsJsonAsync(url, payload);
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Solo logueo local
+            LogService.SaveLog("whatsapp-send-debug",
+                $"To: {to} | OTP: {otpCode} | Status: {response.StatusCode} | Response: {content}");
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Error sending WhatsApp template: {response.StatusCode} - {content}");
+
+            return content;
+        }
+
+
+
+
     }
 }
