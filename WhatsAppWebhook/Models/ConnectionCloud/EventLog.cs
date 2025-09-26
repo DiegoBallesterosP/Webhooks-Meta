@@ -10,6 +10,8 @@ namespace WhatsAppWebhook.Models.ConnectionCloud
         [BsonRepresentation(BsonType.String)]
         public string Id { get; set; } = Guid.NewGuid().ToString();
 
+        public string MessageId { get; set; } = string.Empty;
+
         public string EventType { get; set; } = string.Empty;
         public string Payload { get; set; } = string.Empty;
         [BsonElement("numero_origen")]
@@ -19,7 +21,7 @@ namespace WhatsAppWebhook.Models.ConnectionCloud
 
         public string EventDate { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
-        public string CreatedAt { get; set; } =  DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        public string CreatedAt { get; set; } = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
 
         public string Role { get; set; } = "user";
 

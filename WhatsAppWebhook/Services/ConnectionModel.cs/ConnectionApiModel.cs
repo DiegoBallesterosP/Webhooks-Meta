@@ -25,13 +25,7 @@ namespace WhatsAppWebhook.Services.ConnectionModel
                 var url = $"{baseUrl}/chat";
 
                 using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-                var response = await _http.PostAsJsonAsync(url, requestChat, cts.Token);
-
-                var result = response.IsSuccessStatusCode
-                    ? await response.Content.ReadAsStringAsync()
-                    : "Procesando Solicitud";
-
-                await _sender.SendTextAsync(requestChat.numberUser , string.IsNullOrWhiteSpace(result) ? "Procesando Solicitud" : result);
+                await _http.PostAsJsonAsync(url, requestChat, cts.Token);
 
             }
             catch (Exception ex)
