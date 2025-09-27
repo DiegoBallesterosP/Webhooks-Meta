@@ -5,6 +5,7 @@ namespace WhatsAppWebhook.Services
 {
     public class ValidateConfiguration
     {
+        // NO VA A EXISITR ESTE ARCHIVO ACA EN ESTE PROYECTO ELIMINAR
         private readonly IConfigurationWhatsAppNumberRepository _repository;
         private readonly CloudApiService _cloudApiService;
         public ValidateConfiguration(IConfigurationWhatsAppNumberRepository repository, CloudApiService cloudApiService)
