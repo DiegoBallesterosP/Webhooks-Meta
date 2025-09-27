@@ -1,3 +1,5 @@
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using WhatsAppWebhook.Models.ConnectionCloud;
 using WhatsAppWebhook.Services.ConnectionModel;
 using WhatsAppWebhook.Services.HistoryLogs;
@@ -28,10 +30,11 @@ namespace WhatsAppWebhook.Services
 
         public async Task ProcessWebhookAsync(string rawBody)
         {
+            LogService.SaveLog("webhook-message", $"{rawBody}");
             var messages = WebhookParser.Parse(rawBody);
             foreach (MessageLog msg in messages)
             {
-                LogService.SaveLog("webhook-message", $"{msg.TimestampUtc:O} | TEXT | {msg.SenderName} ({msg.Sender}) | {msg.Content}");
+                
 
                 if (msg.Sender == _sender.SenderId)
                 {
@@ -45,8 +48,7 @@ namespace WhatsAppWebhook.Services
                     continue;
                 }
 
-                // AKI IRA LA API DE CHATGPT O SIMILAR QUE RECIBIRA LA INFORMACION SEA PRIMERA VEZ O NO
-                await _connectionApiModel.SendChatAsync(msg);
+                _connectionApiModel.SendChatAsync(msg);
             }
         }
         private async Task SendUnsupportedTypeResponse(MessageLog msg)

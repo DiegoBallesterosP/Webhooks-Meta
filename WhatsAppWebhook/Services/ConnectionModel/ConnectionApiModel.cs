@@ -18,15 +18,13 @@ namespace WhatsAppWebhook.Services.ConnectionModel
             _sender = whatsAppSenderService;
         }
 
-        public async Task SendChatAsync(MessageLog requestChat)
+        public void SendChatAsync(MessageLog requestChat)
         {
             try
             {
                 var baseUrl = _config["ModelApi:BaseUrl"];
                 var url = $"{baseUrl}/chat";
-
-                //using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
-                await _http.PostAsJsonAsync(url, requestChat);
+                _http.PostAsJsonAsync(url, requestChat);
 
 
             }
