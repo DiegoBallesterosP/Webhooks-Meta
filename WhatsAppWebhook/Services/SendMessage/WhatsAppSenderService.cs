@@ -41,22 +41,20 @@ namespace WhatsAppWebhook.Services.SendMessage
 
             var response = await _http.PostAsJsonAsync(url, payload);
             var content = await response.Content.ReadAsStringAsync();
-
-            if (!message.Contains("Espera la respuesta antes de enviar un nuevo mensaje.", StringComparison.OrdinalIgnoreCase))
-            {
+       
                 _ = Task.Run(() => _cosmosDbService.AddItemAsync(new EventLog
                 {
                     EventType = "Answer-Text",
                     Payload = message,
-                    OriginNumber = SenderId,
+                    OriginNumber = to,
                     DestinationNumber = to,
                     Status = response.IsSuccessStatusCode ? "SENT" : "FAILED",
                     EventDate = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                     Role = "assistant"
                 }));
-            }
+            
 
-            LogService.SaveLog("whatsapp-send-debug", $"To: {to} | Message: {message} | Status: {response.StatusCode} | Response: {content}");
+            LogService.SaveLog("application", $"To: {to} | Message: {message} | Status: {response.StatusCode} | Response: {content}");
 
             if (!response.IsSuccessStatusCode)
                 throw new HttpRequestException($"Error sending WhatsApp message: {response.StatusCode} - {content}");
