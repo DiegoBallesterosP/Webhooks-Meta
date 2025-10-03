@@ -38,6 +38,8 @@ builder.Services.AddSingleton<CosmosDbService>(provider =>
 
 builder.Services.AddScoped<LogService>();
 
+// Servicios de WhatsApp y audio
+builder.Services.AddHttpClient<AudioService>();
 builder.Services.AddHttpClient<WhatsAppSenderService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddHttpClient<ConnectionApiModel>();
