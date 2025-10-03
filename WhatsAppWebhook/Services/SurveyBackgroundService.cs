@@ -1,4 +1,6 @@
-﻿using WhatsAppWebhook.Services.HistoryLogs;
+﻿using System;
+using TimeZoneConverter;
+using WhatsAppWebhook.Services.HistoryLogs;
 using WhatsAppWebhook.Services.SendMessage;
 
 namespace WhatsAppWebhook.Services
@@ -21,8 +23,20 @@ namespace WhatsAppWebhook.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var colombiaTimeZone = TZConvert.GetTimeZoneInfo("SA Pacific Standard Time");
+
             while (!stoppingToken.IsCancellationRequested)
             {
+                var now = TimeZoneInfo.ConvertTime(DateTime.UtcNow, colombiaTimeZone);
+                var nextRun = now.Date.AddHours(8); 
+
+                if (now > nextRun)
+                    nextRun = nextRun.AddDays(7);
+
+                var delay = nextRun - now;
+
+                await Task.Delay(delay, stoppingToken);
+
                 var customers = await _cosmosDbService.GetRandomCustomersWithoutSurveyAsync(0.2);
 
                 foreach (var to in customers)
