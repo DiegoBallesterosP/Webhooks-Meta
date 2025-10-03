@@ -1,5 +1,4 @@
 using WhatsAppWebhook.Models.ConnectionCloud;
-using WhatsAppWebhook.Models.ConnectionModelAI;
 using WhatsAppWebhook.Services.HistoryLogs;
 using WhatsAppWebhook.Services.SendMessage;
 

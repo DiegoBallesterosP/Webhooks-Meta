@@ -113,6 +113,59 @@ namespace WhatsAppWebhook.Services.SendMessage
             return content;
         }
 
+        public async Task<string> SendSurveyAsync(string to)
+        {
+            SetAuthHeader();
+            var url = $"{BaseUrl}{SenderId}/messages";
+            string message = "Tus comentarios son importantes para nosotros.\n\nRealiza una breve encuesta sobre tu experiencia con tu chat.";
+
+            var payload = new
+            {
+                messaging_product = "whatsapp",
+                to = to,
+                type = "interactive",
+                interactive = new
+                {
+                    type = "flow",
+                    header = new
+                    {
+                        type = "text",
+                        text = "Califica tu experiencia"
+                    },
+                    body = new
+                    {
+                        text = message
+                    },
+                    action = new
+                    {
+                        name = "flow",
+                        parameters = new
+                        {
+                            flow_message_version = "3",
+                            flow_id = "2001344520696324",
+                            flow_cta = "Responder encuesta",
+                            flow_action = "navigate",
+                            flow_action_payload = new
+                            {
+                                screen = "SURVEY"
+                            }
+                        }
+                    }
+                }
+            };
+
+            var response = await _http.PostAsJsonAsync(url, payload);
+            var content = await response.Content.ReadAsStringAsync();
+
+            LogService.SaveLog("whatsapp-survey-debug",
+                $"To: {to} | Message: {message} | Status: {response.StatusCode} | Response: {content}");
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException($"Error sending WhatsApp survey: {response.StatusCode} - {content}");
+
+            return content;
+        }
+
 
 
 
