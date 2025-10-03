@@ -8,7 +8,32 @@ namespace WhatsAppWebhook.Services
         private static readonly Dictionary<string, Func<JsonElement, string>> ContentExtractors = new()
         {
             ["text"] = msg => msg.GetProperty("text").GetProperty("body").GetString() ?? string.Empty,
-            ["audio"] = msg => msg.GetProperty("audio").GetProperty("id").GetString() ?? string.Empty
+            ["audio"] = msg => msg.GetProperty("audio").GetProperty("id").GetString() ?? string.Empty,
+            ["interactive"] = msg =>
+            {
+                if (msg.TryGetProperty("interactive", out var interactive) &&
+                    interactive.TryGetProperty("nfm_reply", out var nfmReply) &&
+                    nfmReply.TryGetProperty("response_json", out var responseJsonProp))
+                {
+                    var responseJson = responseJsonProp.GetString();
+                    if (!string.IsNullOrEmpty(responseJson))
+                    {
+                        using var doc = JsonDocument.Parse(responseJson);
+                        var root = doc.RootElement;
+
+                        var rating = root.TryGetProperty("screen_0_Elige_una_opcin_0", out var ratingProp)
+                            ? ratingProp.GetString()
+                            : string.Empty;
+
+                        var comments = root.TryGetProperty("screen_0_TextArea_1", out var commentProp)
+                            ? commentProp.GetString()
+                            : string.Empty;
+
+                        return $"{rating}|{comments}";
+                    }
+                }
+                return string.Empty;
+            }
         };
 
         public static IEnumerable<MessageLog> Parse(string rawBody)

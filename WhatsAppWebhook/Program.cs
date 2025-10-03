@@ -2,15 +2,12 @@ using Amazon;
 using Amazon.Runtime;
 using Amazon.TranscribeStreaming;
 using Microsoft.Extensions.Caching.Memory;
-using WhatsAppWebhook.Models.ConnectionCloud;
-using WhatsAppWebhook.Repositories;
 using WhatsAppWebhook.Services;
-using WhatsAppWebhook.Services.ConnectionCloud;
 using WhatsAppWebhook.Services.ConnectionModel;
 using WhatsAppWebhook.Services.HistoryLogs;
 using WhatsAppWebhook.Services.SendMessage;
 
-EventLog.RegisterClassMap();
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,15 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped<ValidateConfiguration>();
 
-builder.Services.AddSingleton<InMemoryConfigurationWhatsAppNumberRepository>();
-builder.Services.AddSingleton<IConfigurationWhatsAppNumberRepository>(sp =>
-{
-    var inner = sp.GetRequiredService<InMemoryConfigurationWhatsAppNumberRepository>();
-    var cache = sp.GetRequiredService<IMemoryCache>();
-    return new CachedLicenciaRepository(inner, cache);
-});
 
 
 builder.Services.AddSingleton<IAmazonTranscribeStreaming>(provider =>
@@ -46,11 +35,13 @@ builder.Services.AddSingleton<CosmosDbService>(provider =>
     return new CosmosDbService(configuration);
 });
 
+
+builder.Services.AddScoped<LogService>();
+
 // Servicios de WhatsApp y audio
 builder.Services.AddHttpClient<AudioService>();
 builder.Services.AddHttpClient<WhatsAppSenderService>();
 builder.Services.AddScoped<MessageService>();
-builder.Services.AddHttpClient<CloudApiService>();
 builder.Services.AddHttpClient<ConnectionApiModel>();
 
 var app = builder.Build();
