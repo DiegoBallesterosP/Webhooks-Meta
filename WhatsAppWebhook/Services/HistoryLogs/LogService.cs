@@ -1,6 +1,6 @@
 namespace WhatsAppWebhook.Services.HistoryLogs
 {
-    public static class LogService
+    public class LogService
     {
         private static readonly string LogDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
         private static readonly string LogFile = Path.Combine(LogDir, "application.log");

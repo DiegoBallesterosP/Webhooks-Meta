@@ -1,7 +1,6 @@
 using Amazon;
 using Amazon.Runtime;
 using Amazon.TranscribeStreaming;
-using Microsoft.Extensions.Caching.Memory;
 using WhatsAppWebhook.Services;
 using WhatsAppWebhook.Services.ConnectionModel;
 using WhatsAppWebhook.Services.HistoryLogs;
@@ -38,8 +37,7 @@ builder.Services.AddSingleton<CosmosDbService>(provider =>
 
 builder.Services.AddScoped<LogService>();
 
-// Servicios de WhatsApp y audio
-builder.Services.AddHttpClient<AudioService>();
+
 builder.Services.AddHttpClient<WhatsAppSenderService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddHttpClient<ConnectionApiModel>();

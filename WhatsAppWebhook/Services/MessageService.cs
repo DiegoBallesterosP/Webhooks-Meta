@@ -1,4 +1,4 @@
-using System.Text.Json;
+using Newtonsoft.Json;
 using WhatsAppWebhook.Models.ConnectionCloud;
 using WhatsAppWebhook.Models.Enum;
 using WhatsAppWebhook.Services.ConnectionModel;
@@ -107,9 +107,5 @@ namespace WhatsAppWebhook.Services
                 EventDate = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ")
             });
         }
-
-
-
-
     }
 }
