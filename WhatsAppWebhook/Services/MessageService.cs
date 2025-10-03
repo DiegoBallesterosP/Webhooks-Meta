@@ -47,7 +47,7 @@ namespace WhatsAppWebhook.Services
                     await SendUnsupportedTypeResponse(msg);
                     continue;
                 }
-
+                JsonConvert.SerializeObject(msg);
                 _connectionApiModel.SendChatAsync(msg);
             }
         }

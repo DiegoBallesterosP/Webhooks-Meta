@@ -46,9 +46,6 @@ builder.Services.AddSingleton<CosmosDbService>(provider =>
     return new CosmosDbService(configuration);
 });
 
-
-builder.Services.AddScoped<LogService>();
-
 // Servicios de WhatsApp y audio
 builder.Services.AddHttpClient<AudioService>();
 builder.Services.AddHttpClient<WhatsAppSenderService>();
