@@ -41,6 +41,8 @@ builder.Services.AddScoped<LogService>();
 builder.Services.AddHttpClient<WhatsAppSenderService>();
 builder.Services.AddScoped<MessageService>();
 builder.Services.AddHttpClient<ConnectionApiModel>();
+builder.Services.AddHostedService<SurveyBackgroundService>();
+
 
 var app = builder.Build();
 

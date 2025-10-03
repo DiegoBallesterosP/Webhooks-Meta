@@ -38,19 +38,6 @@ namespace WhatsAppWebhook.Services.HistoryLogs
             }
         }
 
-        public async Task<List<EventLog>> GetItemsAsync()
-        {
-            try
-            {
-                return await _eventsCollection.Find(_ => true).ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                LogService.SaveLog("mongodb-error", $"Error al obtener datos de MongoDB: {ex.Message}");
-                return new List<EventLog>();
-            }
-        }
-
         public async Task AddSurveyAsync(SurveyWhLog item)
         {
             try
@@ -62,6 +49,36 @@ namespace WhatsAppWebhook.Services.HistoryLogs
                 LogService.SaveLog("mongodb-error", $"Error al guardar encuesta en MongoDB: {ex.Message}");
             }
         }
+
+        public async Task<List<string>> GetRandomCustomersWithoutSurveyAsync(double percentage = 0.2)
+        {
+            var interactedNumbers = await _eventsCollection
+                .Distinct<string>("OriginNumber", FilterDefinition<EventLog>.Empty)
+                .ToListAsync();
+
+            if (interactedNumbers.Count == 0)
+                return new List<string>();
+
+            var surveyedNumbers = await _surveyWhatsapp
+                .Distinct<string>("OriginNumber", FilterDefinition<SurveyWhLog>.Empty)
+                .ToListAsync();
+
+            var pendingNumbers = interactedNumbers
+                .Except(surveyedNumbers)
+                .ToList();
+
+            if (pendingNumbers.Count == 0)
+                return new List<string>();
+
+            int sampleSize = (int)Math.Ceiling(pendingNumbers.Count * percentage);
+
+            var random = new Random();
+            return pendingNumbers
+                .OrderBy(_ => random.Next())
+                .Take(sampleSize)
+                .ToList();
+        }
+
 
     }
 }
